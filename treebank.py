@@ -28,7 +28,7 @@ class Treebank():
         punct = punctuation.replace("'", None)
 
         spec = (
-            ('PUNCTUATION', r'[%s]' % re_escape(punct)),
+            ('PUNCTUATION', r'[{}]'.format(re_escape(punct))),
             ('QUOTATION', r'"'),
             ('APOSTROPHE', r"'"),
         )
@@ -38,7 +38,7 @@ class Treebank():
     @property
     def tokens_re():
         if not hasattr(self, '_tokens_re'):
-            tokens_re = '|'.join('(?P<%s>%s)' % pair for pair in self.token_spec
+            tokens_re = '|'.join('(?P<{}>{})'.format(pair for pair in self.token_spec)
             self._tokens_re = re_compile(tokens_re)
 
         return self._tokens_re
