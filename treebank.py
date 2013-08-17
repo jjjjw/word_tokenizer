@@ -20,25 +20,35 @@ from string import punctuation
 
 
 class Treebank():
-    def token_spec():
+    @property
+    def token_spec(self):
         """The definitions used for English tokens.
 
         """
-        punct = punctuation.replace('"', None)
-        punct = punctuation.replace("'", None)
+        if not hasattr(self, '_spec'):
+            punct = punctuation.replace('"', "")
+            punct = punctuation.replace("'", "")
 
-        spec = (
-            ('PUNCTUATION', r'[{}]'.format(re_escape(punct))),
-            ('QUOTATION', r'"'),
-            ('APOSTROPHE', r"'"),
-        )
+            self._spec = (
+                ('PUNCTUATION', r'[{}]'.format(re_escape(punct))),
+                ('QUOTATION', re_escape(r'"')),
+                ('APOSTROPHE', re_escape(r"'")),
+            )
 
-        return spec
+        return self._spec
 
     @property
-    def tokens_re():
+    def token_pairs(self):
+        for name, pattern in self.token_spec:
+            yield '(?P<{}>{})'.format(name, pattern)
+
+    @property
+    def tokens_re(self):
         if not hasattr(self, '_tokens_re'):
-            tokens_re = '|'.join('(?P<{}>{})'.format(pair for pair in self.token_spec)
+            tokens_re = '|'.join(self.token_pairs)
             self._tokens_re = re_compile(tokens_re)
 
         return self._tokens_re
+
+    def tokenize(self, text: str):
+        return self.tokens_re.match(text)
