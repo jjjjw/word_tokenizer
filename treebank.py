@@ -34,7 +34,6 @@ class Treebanklike():
                 ('WORD', r'\w+'),
                 ('ELLIPSES', re_escape(r'...')),
                 ('QUOTATION', re_escape(r'"')),
-                # ('APOSTROPHE', re_escape(r"'")),
                 ('PUNCTUATION', punct),
             )
 
@@ -45,8 +44,8 @@ class Treebanklike():
         """Yields the pattern groups.
 
         """
-        for name, pattern in self.token_spec:
-            yield '(?P<{}>{})'.format(name, pattern)
+        for type_, pattern in self.token_spec:
+            yield '(?P<{}>{})'.format(type_, pattern)
 
     @property
     def tokens_re(self) -> type(re_compile(r'')):
@@ -66,10 +65,10 @@ class Treebanklike():
         in_quote = False
 
         for mo in self.tokens_re.finditer(text):
-            name = mo.lastgroup
+            type_ = mo.lastgroup
             token = mo.group()
 
-            if name == "QUOTATION":
+            if type_ == "QUOTATION":
                 if in_quote:
                     in_quote = False
                     token = "''"
