@@ -1,7 +1,7 @@
 """
-Penn Treebank Tokenizer
+Penn Treebanklike Tokenizer
 
-The Treebank tokenizer uses regular expressions to tokenize text as in Penn Treebank.
+The Treebanklike tokenizer uses regular expressions to tokenize text as in Penn Treebank.
 This implementation is a port of the tokenizer sed script written by Robert McIntyre
 and available at http://www.cis.upenn.edu/~treebank/tokenizer.sed.
 
@@ -19,20 +19,23 @@ from re import escape as re_escape
 from string import punctuation
 
 
-class Treebank():
+class Treebanklike():
     @property
     def token_spec(self):
         """The definitions used for English tokens.
 
         """
         if not hasattr(self, '_spec'):
-            punct = punctuation.replace('"', "")
-            punct = punctuation.replace("'", "")
+            punct = re_escape(punctuation)
+            punct = punct.replace(r"\"", "")
+            punct = punct.replace(r"\'", "")
 
             self._spec = (
-                ('PUNCTUATION', r'[{}]'.format(re_escape(punct))),
+                ('WORD', r'\w+'),
+                ('ELLIPSES', re_escape(r'...')),
                 ('QUOTATION', re_escape(r'"')),
                 ('APOSTROPHE', re_escape(r"'")),
+                ('PUNCTUATION', r'[{}]'.format(punct)),
             )
 
         return self._spec
@@ -50,5 +53,6 @@ class Treebank():
 
         return self._tokens_re
 
-    def tokenize(self, text: str):
-        return self.tokens_re.match(text)
+    def __call__(self, text: str):
+        for mo in self.tokens_re.finditer(text):
+            yield mo.group()
