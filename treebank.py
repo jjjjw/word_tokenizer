@@ -34,7 +34,7 @@ class Treebanklike():
                 ('WORD', r'\w+'),
                 ('ELLIPSES', re_escape(r'...')),
                 ('QUOTATION', re_escape(r'"')),
-                ('APOSTROPHE', re_escape(r"'")),
+                # ('APOSTROPHE', re_escape(r"'")),
                 ('PUNCTUATION', punct),
             )
 
@@ -63,5 +63,18 @@ class Treebanklike():
         """Yields tokens.
 
         """
+        in_quote = False
+
         for mo in self.tokens_re.finditer(text):
-            yield mo.group()
+            name = mo.lastgroup
+            token = mo.group()
+
+            if name == "QUOTATION":
+                if in_quote:
+                    in_quote = False
+                    token = "''"
+                else:
+                    in_quote = True
+                    token = "``"
+
+            yield token
