@@ -27,32 +27,41 @@ class Treebanklike():
         """
         if not hasattr(self, '_spec'):
             punct = re_escape(punctuation)
-            punct = punct.replace(r"\"", "")
-            punct = punct.replace(r"\'", "")
+            punct = r'[{}]'.format(punct)
 
+            # Order matters for this spec, for example, punctuation contains a period but we want to capture ellipses.
             self._spec = (
                 ('WORD', r'\w+'),
                 ('ELLIPSES', re_escape(r'...')),
                 ('QUOTATION', re_escape(r'"')),
                 ('APOSTROPHE', re_escape(r"'")),
-                ('PUNCTUATION', r'[{}]'.format(punct)),
+                ('PUNCTUATION', punct),
             )
 
         return self._spec
 
     @property
-    def token_pairs(self):
+    def token_patterns(self):
+        """Yields the pattern groups.
+
+        """
         for name, pattern in self.token_spec:
             yield '(?P<{}>{})'.format(name, pattern)
 
     @property
-    def tokens_re(self):
+    def tokens_re(self) -> type(re_compile(r'')):
+        """Compiles the token regex for use.
+
+        """
         if not hasattr(self, '_tokens_re'):
-            tokens_re = '|'.join(self.token_pairs)
+            tokens_re = '|'.join(self.token_patterns)
             self._tokens_re = re_compile(tokens_re)
 
         return self._tokens_re
 
     def __call__(self, text: str):
+        """Yields tokens.
+
+        """
         for mo in self.tokens_re.finditer(text):
             yield mo.group()
