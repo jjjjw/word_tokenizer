@@ -26,6 +26,7 @@ def lazy_initialization(func):
     def dec(*args):
         self = args[0]  # Hazard!
         prop = "_" + func.__name__
+
         if not hasattr(self, prop):
             val = func(*args)
             setattr(self, prop, val)
