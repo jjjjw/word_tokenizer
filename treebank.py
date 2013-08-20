@@ -19,25 +19,42 @@ from re import escape as re_escape
 from string import punctuation
 
 
+def lazy_initialization(func):
+    """Decorates object properties to be lazily instantiated.
+
+    """
+    def dec(*args):
+        self = args[0]  # Hazard!
+        prop = "_" + func.__name__
+        if not hasattr(self, prop):
+            val = func(*args)
+            setattr(self, prop, val)
+
+        return getattr(self, prop)
+
+    return dec
+
+
 class Treebanklike():
+
     @property
+    @lazy_initialization
     def token_spec(self):
         """The definitions used for English tokens.
 
         """
-        if not hasattr(self, '_spec'):
-            punct = re_escape(punctuation)
-            punct = r'[{}]'.format(punct)
+        punct = re_escape(punctuation)
+        punct = r'[{}]'.format(punct)
 
-            # Order matters for this spec, for example, punctuation contains a period but we want to capture ellipses.
-            self._spec = (
-                ('WORD', r'\w+'),
-                ('ELLIPSES', re_escape(r'...')),
-                ('QUOTATION', re_escape(r'"')),
-                ('PUNCTUATION', punct),
-            )
+        # Order matters for this spec, for example, punctuation contains a period but we want to capture ellipses.
+        spec = (
+            ('WORD', r'\w+'),
+            ('ELLIPSES', re_escape(r'...')),
+            ('QUOTATION', re_escape(r'"')),
+            ('PUNCTUATION', punct),
+        )
 
-        return self._spec
+        return spec
 
     @property
     def token_patterns(self):
@@ -48,15 +65,15 @@ class Treebanklike():
             yield '(?P<{}>{})'.format(type_, pattern)
 
     @property
+    @lazy_initialization
     def tokens_re(self) -> type(re_compile(r'')):
         """Compiles the token regex for use.
 
         """
-        if not hasattr(self, '_tokens_re'):
-            tokens_re = '|'.join(self.token_patterns)
-            self._tokens_re = re_compile(tokens_re)
+        tokens_re = '|'.join(self.token_patterns)
+        tokens_re = re_compile(tokens_re)
 
-        return self._tokens_re
+        return tokens_re
 
     def __call__(self, text: str):
         """Yields tokens.
