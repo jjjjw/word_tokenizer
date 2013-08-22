@@ -47,7 +47,11 @@ class Treebanklike():
         punct = re_escape(punctuation)
         punct = r'[{}]'.format(punct)
 
-        # Order matters for this spec, for example, punctuation contains a period but we want to capture ellipses.
+        """Order matters for this spec, specific tokens must precede general tokens.
+        For example, punctuation contains a period but we want to capture ellipses, so ellipses
+        are listed first and will be matched before a single period.
+
+        """
         spec = (
             ('WORD', r'\w+'),
             ('ELLIPSES', re_escape(r'...')),
