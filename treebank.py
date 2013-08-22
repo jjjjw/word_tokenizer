@@ -67,7 +67,7 @@ class Treebanklike():
 
     @property
     @lazy_initialization
-    def tokens_re(self) -> type(re_compile(r'')):
+    def tokens_re(self):
         """Compiles the token regex for use.
 
         """
